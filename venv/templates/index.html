@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Classification</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Image Classification</h1>
+        <form id="uploadForm" enctype="multipart/form-data">
+            <input type="file" name="file" id="fileInput" accept="image/*">
+            <button type="submit">Upload and Classify</button>
+        </form>
+        <div id="result">
+            <h2>Predicted Class:</h2>
+            <p id="predictedClass"></p>
+            <h2>Uploaded Image:</h2>
+            <img id="uploadedImage" src="" alt="Uploaded Image" style="max-width: 200px; height: auto;">
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('uploadForm').onsubmit = async function(event) {
+            event.preventDefault();
+
+            const formData = new FormData();
+            const fileInput = document.getElementById('fileInput');
+
+            if (fileInput.files.length === 0) {
+                alert('Please select a file to upload.');
+                return;
+            }
+
+            const file = fileInput.files[0];
+            formData.append('file', file);
+
+            // Show the uploaded image in a smaller size
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('uploadedImage').src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+
+            const response = await fetch('/predict', {
+                method: 'POST',
+                body: formData
+            });
+
+            const result = await response.json();
+
+            // Extract and display the predicted class
+            const predictedClass = result.predicted_classes[0];
+            document.getElementById('predictedClass').innerText = predictedClass;
+        };
+    </script>
+</body>
+</html>
